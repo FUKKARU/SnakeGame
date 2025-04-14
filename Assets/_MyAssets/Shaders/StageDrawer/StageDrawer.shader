@@ -1,5 +1,9 @@
 Shader "Hidden/StageDrawer"
 {
+    Properties
+    {
+        [IntRange] _LineWidth ("LineWidth (px)", Range(1, 100)) = 10
+    }
     SubShader
     {
         Cull Off ZWrite Off ZTest Always
@@ -11,17 +15,18 @@ Shader "Hidden/StageDrawer"
             #pragma fragment frag
             #include "UnityCG.cginc"
 
-            #define Size 10
-            #define LineWidth 10 // px
-
-            // ステージ情報(10x10)
+            // ステージ情報
+            // 最初の _Size * _Size 個のみを使用（ステージのサイズ変更に対応するため）
             // index = x + y * 10 にて計算している
             // 0なら白色
             // 1なら黒色
             // 2なら赤色
             // 3なら青色
             // 4なら緑色
-            float _StageInfo[Size * Size];
+            float _StageInfo[1000];
+
+            float _Size;
+            float _LineWidth;
 
             struct appdata
             {
@@ -45,16 +50,16 @@ Shader "Hidden/StageDrawer"
                 float2 uv = i.pos.xy / _ScreenParams.xy; // [0, 1]の範囲に正規化
 
                 // 枠線を描画(Sizeが10の場合、0.1, 0.2, ... , 0.9 の位置)
-                float lineWidthUV = float2(LineWidth, LineWidth) / _ScreenParams.xy; // UV空間でのLineWidthに変換
-                float isLineX = step(frac(uv.x * Size), lineWidthUV);
-                float isLineY = step(frac(uv.y * Size), lineWidthUV);
+                float lineWidthUV = float2(_LineWidth, _LineWidth) / _ScreenParams.xy; // UV空間でのLineWidthに変換
+                float isLineX = step(frac(uv.x * _Size), lineWidthUV);
+                float isLineY = step(frac(uv.y * _Size), lineWidthUV);
                 float isLine = max(isLineX, isLineY);
                 if (isLine == 1.0) return 0.0;
 
                 // Infoの何番目のインデックスか計算
-                float x = floor(uv.x * Size);
-                float y = floor(uv.y * Size);
-                int index = int(x + y * Size);
+                float x = floor(uv.x * _Size);
+                float y = floor(uv.y * _Size);
+                int index = int(x + y * _Size);
 
                 if (_StageInfo[index] == 0) return float4(1,1,1,1);
                 if (_StageInfo[index] == 1) return float4(0,0,0,1);

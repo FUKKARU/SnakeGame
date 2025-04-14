@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace NGeneral
 {
     public static class Extensions
@@ -45,5 +47,15 @@ namespace NGeneral
 
             return value;
         }
+
+        /// <summary>
+        /// タプルをVector2Intに変換する
+        /// </summary>
+        public static Vector2Int ToVector2Int(this (int x, int y) value) => new Vector2Int(value.x, value.y);
+
+        /// <summary>
+        /// Vector2Intをタプルに変換する
+        /// </summary>
+        public static (int x, int y) ToTuple(this Vector2Int value) => (value.x, value.y);
     }
 }

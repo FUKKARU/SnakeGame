@@ -9,12 +9,19 @@ namespace NStageManager
 {
     public sealed class StageManager : AStageDrawer
     {
-        [SerializeField] private Text directionText; // 進行方向を画面に表示するテキスト
-        [SerializeField] private Text gameEndLabel; // ゲームオーバーのラベル
-        [SerializeField, Range(0.01f, 5.0f)] private float stepInterval; // ステップ間隔
-        [SerializeField] private bool isStageInfinite; // ステージがループして、無限に続くかどうか
-        [SerializeField, Range(0, 10)] private int itemMaxAmount; // アイテムの最大数
-        [SerializeField, Range(5, 20)] private int itemGeneratingCellLimit; // アイテムの生成を止める、空きマスの数の境界値（＝最大値）
+        [Space(20)]
+        [Header("Stage Settings")]
+        [Space(10)]
+        [SerializeField, Tooltip("ステージがループして、無限に続くかどうか")] private bool isStageInfinite;
+        [SerializeField, Range(0.01f, 5.0f), Tooltip("ステップ間隔")] private float stepInterval;
+        [SerializeField, Range(0, 100), Tooltip("アイテムの最大数")] private int itemMaxAmount;
+        [SerializeField, Range(0, 100), Tooltip("アイテムの生成を止める、空きマスの数の境界値（＝最大値）")] private int itemGeneratingCellLimit;
+
+        [Space(20)]
+        [Header("UI")]
+        [Space(10)]
+        [SerializeField, Tooltip("進行方向を画面に表示するテキスト")] private Text directionText;
+        [SerializeField, Tooltip("ゲームオーバーのラベル")] private Text gameEndLabel;
 
         // 体の座標情報. 0番目が頭. 最初は長さ3
         private Vector2Int[] bodies = { new(1, 3), new(1, 2), new(1, 1), new(1, 0) };
@@ -130,9 +137,7 @@ namespace NStageManager
 
             // 体の座標情報を更新
             for (int i = bodies.Length - 1; i > 0; i--)
-            {
                 bodies[i] = bodies[i - 1];
-            }
 
             // 頭の座標情報を更新
             // この時、アイテムを取る（＝体で上書きする）ことがある
@@ -140,11 +145,7 @@ namespace NStageManager
             bool gotItem = stageInfo.Get(nextHead, out int value) && value.IsItem();
             bodies[0] = nextHead;
             if (isStageInfinite)
-            {
-                // ステージがループして、無限に続く
-                bodies[0].x = bodies[0].x.Looped(StageInfo.Size);
-                bodies[0].y = bodies[0].y.Looped(StageInfo.Size);
-            }
+                bodies[0] = stageInfo.GetLoopedPosition(bodies[0]).ToVector2Int();
 
             // ステージに表示する
             // 尾だったマスは、空きマスに戻す
@@ -153,21 +154,16 @@ namespace NStageManager
             stageInfo.Set(preTail, CellType.Empty);
 
 
-            // 頭が体とぶつかったら、死亡
+            // 頭が体とぶつかったら死亡
             for (int i = 1; i < bodies.Length; i++)
             {
-                if (bodies[0].x == bodies[i].x && bodies[0].y == bodies[i].y)
-                {
+                if (bodies[0] == bodies[i])
                     return true;
-                }
             }
 
-            // ステージ外に出たら、死亡
-            if (!isStageInfinite)
-            {
-                if (!bodies[0].x.InRange(0, StageInfo.Size - 1)) return true;
-                if (!bodies[0].y.InRange(0, StageInfo.Size - 1)) return true;
-            }
+            // ステージ外に出たら死亡
+            if (!isStageInfinite && !stageInfo.IsIn(bodies[0]))
+                return true;
 
             // アイテムを取ったら、体を伸ばす
             // 尾だったマスを体にするので、マスが意図せず上書きされることはない
@@ -190,20 +186,18 @@ namespace NStageManager
         {
             // 空きマスの数を数え、アイテム生成の上限を超えたら、何もしない
             int emptyCount = 0;
-            foreach ((int x, int y) in stageInfo.Enumerate())
+            foreach (var pos in stageInfo.EnumeratePositions())
             {
-                if (stageInfo.Get(x, y, out int value) && value.IsEmpty())
+                if (stageInfo.Get(pos, out int value) && value.IsEmpty())
                     emptyCount++;
             }
             if (emptyCount <= itemGeneratingCellLimit) return;
 
             // フィールド上のアイテムの数を数え、上限を超えたら、何もしない
             int itemCount = 0;
-            foreach ((int x, int y) in stageInfo.Enumerate())
+            foreach (var pos in stageInfo.EnumeratePositions())
             {
-                if (!stageInfo.Get(x, y, out int value)) continue;
-
-                if (value.IsItem())
+                if (stageInfo.Get(pos, out int value) && value.IsItem())
                     itemCount++;
             }
             if (itemCount >= itemMaxAmount) return;
@@ -213,18 +207,17 @@ namespace NStageManager
             for (int _ = 0; _ < createAmount; _++)
             {
                 // 空きマスをランダムに選ぶ
-                int x = Random.Range(0, StageInfo.Size);
-                int y = Random.Range(0, StageInfo.Size);
+                var pos = stageInfo.GetRandomPosition();
 
                 // 空きマスでなければ、やり直し
-                if (!(stageInfo.Get(x, y, out int value) && value == CellType.Empty)) continue;
+                if (!(stageInfo.Get(pos, out int value) && value == CellType.Empty)) continue;
 
                 // 種類をランダムに決定
                 int[] items = CellType.GetItems();
                 int item = items[Random.Range(0, items.Length)];
 
                 // アイテムを生成する
-                stageInfo.Set(x, y, item);
+                stageInfo.Set(pos, item);
             }
         }
     }

@@ -1,20 +1,29 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using NGeneral;
+using Random = UnityEngine.Random;
 
 namespace NStageManager
 {
     public sealed class StageInfo
     {
-        public static readonly int Size = 10;
+        private readonly int size = 0;
+        private readonly int[,] array; // trueなら塗る、falseなら塗らない. 左下を(0, 0)のインデックスとする
 
-        private int[,] Array = new int[Size, Size]; // trueなら塗る、falseなら塗らない. 左下を(0, 0)のインデックスとする
-
-        public IEnumerable<(int x, int y)> Enumerate()
+        public StageInfo(int size)
         {
-            for (int y = 0; y < Size; y++)
+            this.size = size;
+            array = new int[size, size];
+        }
+
+        public int Size => size;
+
+        public IEnumerable<(int x, int y)> EnumeratePositions()
+        {
+            for (int y = 0; y < size; y++)
             {
-                for (int x = 0; x < Size; x++)
+                for (int x = 0; x < size; x++)
                 {
                     yield return (x, y);
                 }
@@ -25,31 +34,43 @@ namespace NStageManager
         {
             value = 0;
 
-            if (!x.InRange(0, Size - 1))
+            if (!x.InRange(0, size - 1))
                 return false;
 
-            if (!y.InRange(0, Size - 1))
+            if (!y.InRange(0, size - 1))
                 return false;
 
-            value = Array[x, y];
+            value = array[x, y];
             return true;
         }
 
         public bool Set(int x, int y, int value)
         {
-            if (!x.InRange(0, Size - 1))
+            if (!x.InRange(0, size - 1))
                 return false;
 
-            if (!y.InRange(0, Size - 1))
+            if (!y.InRange(0, size - 1))
                 return false;
 
-            Array[x, y] = value;
+            array[x, y] = value;
             return true;
         }
 
         public bool Get(Vector2Int pos, out int value) => Get(pos.x, pos.y, out value);
+        public bool Get((int x, int y) pos, out int value) => Get(pos.x, pos.y, out value);
         public bool Set(Vector2Int pos, int value) => Set(pos.x, pos.y, value);
+        public bool Set((int x, int y) pos, int value) => Set(pos.x, pos.y, value);
 
-        public void Clear() => Array = new int[Size, Size];
+        public bool IsIn(int x, int y) => x.InRange(0, size - 1) && y.InRange(0, size - 1);
+        public bool IsIn(Vector2Int pos) => IsIn(pos.x, pos.y);
+        public bool IsIn((int x, int y) pos) => IsIn(pos.x, pos.y);
+
+        public (int x, int y) GetRandomPosition() => (Random.Range(0, size), Random.Range(0, size));
+
+        public (int x, int y) GetLoopedPosition(int x, int y) => (x.Looped(size), y.Looped(size));
+        public (int x, int y) GetLoopedPosition(Vector2Int pos) => GetLoopedPosition(pos.x, pos.y);
+        public (int x, int y) GetLoopedPosition((int x, int y) pos) => GetLoopedPosition(pos.x, pos.y);
+
+        public void Clear() => Array.Clear(array, 0, array.Length);
     }
 }
