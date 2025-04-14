@@ -11,38 +11,40 @@ namespace NStageManager
 
         #endregion
 
-
         [Header("View")]
         [Space(10)]
-        [SerializeField] private Material material;
-        [SerializeField, Range(1, 30), Tooltip("ステージのサイズ")] private int size;
+        [SerializeField] private Shader shader;
+        [SerializeField, Range(1, 100), Tooltip("ステージのサイズ")] private int size;
+        [SerializeField, Range(1, 100), Tooltip("枠線の幅")] private int borderWidth;
 
         private static readonly int StageInfoTexId = Shader.PropertyToID("_StageInfoTex");
         private static readonly int StageSizeId = Shader.PropertyToID("_Size");
-        private Material theMaterial;
+        private static readonly int BorderWidthId = Shader.PropertyToID("_BorderWidth");
+        private Material material;
 
         private void Awake()
         {
-            theMaterial = new Material(material);
+            material = new Material(shader);
             stageInfo = new StageInfo(size);
         }
 
         private void OnDestroy()
         {
-            if (theMaterial != null) Destroy(theMaterial);
+            if (material != null) Destroy(material);
         }
 
         private void OnRenderImage(RenderTexture source, RenderTexture destination)
         {
             UpdateMaterial();
-            Graphics.Blit(source, destination, theMaterial);
+            Graphics.Blit(source, destination, material);
         }
 
         private void UpdateMaterial()
         {
-            if (theMaterial == null) return;
+            if (material == null) return;
 
-            theMaterial.SetFloat(StageSizeId, size);
+            material.SetFloat(StageSizeId, size);
+            material.SetFloat(BorderWidthId, borderWidth);
 
             Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
             {
@@ -55,7 +57,7 @@ namespace NStageManager
                 tex.SetPixel(x, size - y - 1, value); // y軸は反転
             }
             tex.Apply();
-            theMaterial.SetTexture(StageInfoTexId, tex);
+            material.SetTexture(StageInfoTexId, tex);
             Destroy(tex);
         }
     }

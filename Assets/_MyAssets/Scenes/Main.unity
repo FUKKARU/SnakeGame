@@ -439,8 +439,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b96096aadf6a14946a598b4679edf5f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  material: {fileID: 2100000, guid: 5b873ab31ff2b44c9a8175c32041eacd, type: 2}
+  shader: {fileID: 4800000, guid: 65a564e5180c343e686139948f70bd17, type: 3}
   size: 10
+  borderWidth: 20
   isStageInfinite: 1
   stepInterval: 0.5
   itemMaxAmount: 3

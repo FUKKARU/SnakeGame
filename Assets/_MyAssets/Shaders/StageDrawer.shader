@@ -37,11 +37,10 @@ Shader "Hidden/StageDrawer"
             {
                 float2 uv = i.pos.xy / _ScreenParams.xy; // [0, 1]の範囲に正規化
 
-                // 枠線を描画
-                float2 cellUVSize = 1.0 / _Size.xx;
-                float2 borderWidthUV = _BorderWidth / _ScreenParams.xy / cellUVSize;
-                float isLineX = step(frac(uv.x * _Size), borderWidthUV.x);
-                float isLineY = step(frac(uv.y * _Size), borderWidthUV.y);
+                // 枠線を描画(Sizeが10の場合、0.1, 0.2, ... , 0.9 の位置)
+                float lineWidthUV = float2(_BorderWidth, _BorderWidth) / _ScreenParams.xy; // UV空間でのLineWidthに変換
+                float isLineX = step(frac(uv.x * _Size), lineWidthUV);
+                float isLineY = step(frac(uv.y * _Size), lineWidthUV);
                 float isLine = max(isLineX, isLineY);
                 if (isLine == 1.0) return 0.0;
 
