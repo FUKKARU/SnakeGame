@@ -17,13 +17,9 @@ namespace NStageManager
         [SerializeField] private Material material;
         [SerializeField, Range(1, 30), Tooltip("ステージのサイズ")] private int size;
 
-        private static readonly int StageInfoId = Shader.PropertyToID("_StageInfo");
+        private static readonly int StageInfoTexId = Shader.PropertyToID("_StageInfoTex");
         private static readonly int StageSizeId = Shader.PropertyToID("_Size");
         private Material theMaterial;
-
-        // Shaderに受け渡す用、使い回す
-        // 最初の size * size 個のみを使用（ステージのサイズ変更に対応するため）
-        private readonly float[] stageInfoAsFloatArray = new float[1000];
 
         private void Awake()
         {
@@ -48,14 +44,19 @@ namespace NStageManager
 
             theMaterial.SetFloat(StageSizeId, size);
 
-            Array.Clear(stageInfoAsFloatArray, 0, stageInfoAsFloatArray.Length);
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                wrapMode = TextureWrapMode.Repeat,
+                filterMode = FilterMode.Point
+            };
             foreach ((int x, int y) in stageInfo.EnumeratePositions())
             {
-                if (!stageInfo.Get(x, y, out int value)) continue;
-                int index = x + (size - y - 1) * size; // y座標を反転
-                stageInfoAsFloatArray[index] = value;
+                if (!stageInfo.Get(x, y, out Color value)) continue;
+                tex.SetPixel(x, size - y - 1, value); // y軸は反転
             }
-            theMaterial.SetFloatArray(StageInfoId, stageInfoAsFloatArray);
+            tex.Apply();
+            theMaterial.SetTexture(StageInfoTexId, tex);
+            Destroy(tex);
         }
     }
 }

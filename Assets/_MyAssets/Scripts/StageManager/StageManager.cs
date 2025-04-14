@@ -142,7 +142,7 @@ namespace NStageManager
             // 頭の座標情報を更新
             // この時、アイテムを取る（＝体で上書きする）ことがある
             Vector2Int nextHead = bodies[0] + direction; // ここにアイテムがあったら、体で上書きされるので、アイテムを取ったということ
-            bool gotItem = stageInfo.Get(nextHead, out int value) && value.IsItem();
+            bool gotItem = stageInfo.Get(nextHead, out Color value) && value.IsItem();
             bodies[0] = nextHead;
             if (isStageInfinite)
                 bodies[0] = stageInfo.GetLoopedPosition(bodies[0]).ToVector2Int();
@@ -188,7 +188,7 @@ namespace NStageManager
             int emptyCount = 0;
             foreach (var pos in stageInfo.EnumeratePositions())
             {
-                if (stageInfo.Get(pos, out int value) && value.IsEmpty())
+                if (stageInfo.Get(pos, out Color value) && value.IsEmpty())
                     emptyCount++;
             }
             if (emptyCount <= itemGeneratingCellLimit) return;
@@ -197,7 +197,7 @@ namespace NStageManager
             int itemCount = 0;
             foreach (var pos in stageInfo.EnumeratePositions())
             {
-                if (stageInfo.Get(pos, out int value) && value.IsItem())
+                if (stageInfo.Get(pos, out Color value) && value.IsItem())
                     itemCount++;
             }
             if (itemCount >= itemMaxAmount) return;
@@ -210,11 +210,11 @@ namespace NStageManager
                 var pos = stageInfo.GetRandomPosition();
 
                 // 空きマスでなければ、やり直し
-                if (!(stageInfo.Get(pos, out int value) && value == CellType.Empty)) continue;
+                if (!(stageInfo.Get(pos, out Color value) && value == CellType.Empty)) continue;
 
                 // 種類をランダムに決定
-                int[] items = CellType.GetItems();
-                int item = items[Random.Range(0, items.Length)];
+                Color[] items = CellType.GetItems();
+                Color item = items[Random.Range(0, items.Length)];
 
                 // アイテムを生成する
                 stageInfo.Set(pos, item);

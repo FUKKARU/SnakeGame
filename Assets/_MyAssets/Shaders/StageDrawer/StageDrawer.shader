@@ -15,16 +15,8 @@ Shader "Hidden/StageDrawer"
             #pragma fragment frag
             #include "UnityCG.cginc"
 
-            // ステージ情報
-            // 最初の _Size * _Size 個のみを使用（ステージのサイズ変更に対応するため）
-            // index = x + y * 10 にて計算している
-            // 0なら白色
-            // 1なら黒色
-            // 2なら赤色
-            // 3なら青色
-            // 4なら緑色
-            float _StageInfo[1000];
-
+            // ステージ情報 （_Size * _Size のサイズのはず！）
+            sampler2D _StageInfoTex;
             float _Size;
             float _LineWidth;
 
@@ -56,17 +48,7 @@ Shader "Hidden/StageDrawer"
                 float isLine = max(isLineX, isLineY);
                 if (isLine == 1.0) return 0.0;
 
-                // Infoの何番目のインデックスか計算
-                float x = floor(uv.x * _Size);
-                float y = floor(uv.y * _Size);
-                int index = int(x + y * _Size);
-
-                if (_StageInfo[index] == 0) return float4(1,1,1,1);
-                if (_StageInfo[index] == 1) return float4(0,0,0,1);
-                if (_StageInfo[index] == 2) return float4(1,0,0,1);
-                if (_StageInfo[index] == 3) return float4(0,0,1,1);
-                if (_StageInfo[index] == 4) return float4(0,1,0,1);
-                return float4(0,0,0,1);
+                return tex2D(_StageInfoTex, uv);
             }
             ENDCG
         }

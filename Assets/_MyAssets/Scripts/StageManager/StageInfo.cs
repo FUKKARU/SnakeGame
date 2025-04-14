@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using NGeneral;
@@ -9,12 +8,13 @@ namespace NStageManager
     public sealed class StageInfo
     {
         private readonly int size = 0;
-        private readonly int[,] array; // trueなら塗る、falseなら塗らない. 左下を(0, 0)のインデックスとする
+        private readonly Color[,] array; // 左下を(0, 0)のインデックスとする
 
         public StageInfo(int size)
         {
             this.size = size;
-            array = new int[size, size];
+            array = new Color[size, size];
+            Clear();
         }
 
         public int Size => size;
@@ -30,9 +30,9 @@ namespace NStageManager
             }
         }
 
-        public bool Get(int x, int y, out int value)
+        public bool Get(int x, int y, out Color value)
         {
-            value = 0;
+            value = default;
 
             if (!x.InRange(0, size - 1))
                 return false;
@@ -44,7 +44,7 @@ namespace NStageManager
             return true;
         }
 
-        public bool Set(int x, int y, int value)
+        public bool Set(int x, int y, Color value)
         {
             if (!x.InRange(0, size - 1))
                 return false;
@@ -56,10 +56,10 @@ namespace NStageManager
             return true;
         }
 
-        public bool Get(Vector2Int pos, out int value) => Get(pos.x, pos.y, out value);
-        public bool Get((int x, int y) pos, out int value) => Get(pos.x, pos.y, out value);
-        public bool Set(Vector2Int pos, int value) => Set(pos.x, pos.y, value);
-        public bool Set((int x, int y) pos, int value) => Set(pos.x, pos.y, value);
+        public bool Get(Vector2Int pos, out Color value) => Get(pos.x, pos.y, out value);
+        public bool Get((int x, int y) pos, out Color value) => Get(pos.x, pos.y, out value);
+        public bool Set(Vector2Int pos, Color value) => Set(pos.x, pos.y, value);
+        public bool Set((int x, int y) pos, Color value) => Set(pos.x, pos.y, value);
 
         public bool IsIn(int x, int y) => x.InRange(0, size - 1) && y.InRange(0, size - 1);
         public bool IsIn(Vector2Int pos) => IsIn(pos.x, pos.y);
@@ -71,6 +71,10 @@ namespace NStageManager
         public (int x, int y) GetLoopedPosition(Vector2Int pos) => GetLoopedPosition(pos.x, pos.y);
         public (int x, int y) GetLoopedPosition((int x, int y) pos) => GetLoopedPosition(pos.x, pos.y);
 
-        public void Clear() => Array.Clear(array, 0, array.Length);
+        public void Clear()
+        {
+            foreach (var pos in EnumeratePositions())
+                Set(pos, CellType.Empty);
+        }
     }
 }
