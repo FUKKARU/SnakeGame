@@ -8,6 +8,7 @@ namespace NStageManager
         #region 派生クラスに公開するもの
 
         protected StageInfo stageInfo;
+        protected virtual void Dispose() { }
 
         #endregion
 
@@ -26,11 +27,21 @@ namespace NStageManager
         {
             material = new Material(shader);
             stageInfo = new StageInfo(size);
+
+            shader = null;
         }
 
         private void OnDestroy()
         {
-            if (material != null) Destroy(material);
+            Dispose();
+
+            if (material != null)
+            {
+                Destroy(material);
+                material = null;
+            }
+
+            stageInfo = null;
         }
 
         private void OnRenderImage(RenderTexture source, RenderTexture destination)

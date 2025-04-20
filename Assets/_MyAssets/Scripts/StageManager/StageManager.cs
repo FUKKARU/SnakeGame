@@ -31,8 +31,16 @@ namespace NStageManager
 
         private void Start()
         {
-            stageInfo.Clear();
+            stageInfo?.Clear();
             StartCoroutine(StepAndDraw());
+        }
+
+        protected override void Dispose()
+        {
+            directionText = null;
+            gameEndLabel = null;
+
+            bodies = null;
         }
 
         private void Update()
