@@ -442,7 +442,7 @@ MonoBehaviour:
   shader: {fileID: 4800000, guid: 65a564e5180c343e686139948f70bd17, type: 3}
   size: 10
   borderWidth: 20
-  isStageInfinite: 1
+  isStageInfinite: 0
   stepInterval: 0.5
   itemMaxAmount: 3
   itemGeneratingCellLimit: 10
